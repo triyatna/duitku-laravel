@@ -9,14 +9,15 @@ Dengan menggunakan package ini, pengembang dapat melakukan tugas-tugas esensial 
 
 ## Fitur
 
--   Antarmuka facade yang sederhana (`Duitku::...`).
--   Konfigurasi yang terpusat dalam *file* `config/duitku.php`.
--   Pengaturan kredensial yang aman melalui *file* `.env`.
--   *Auto-discovery* untuk Laravel, tidak perlu registrasi manual.
--   Dukungan untuk mode *Sandbox* dan *Produksi*.
--   Metode bantuan untuk validasi *callback* dari Duitku.
+- Antarmuka facade yang sederhana (`Duitku::...`).
+- Konfigurasi yang terpusat dalam _file_ `config/duitku.php`.
+- Pengaturan kredensial yang aman melalui _file_ `.env`.
+- _Auto-discovery_ untuk Laravel, tidak perlu registrasi manual.
+- Dukungan untuk mode _Sandbox_ dan _Produksi_.
+- Metode bantuan untuk validasi _callback_ dari Duitku.
 
 ## Instalasi
+
 Anda dapat menginstal package ini melalui Composer.
 
 ```bash
@@ -24,15 +25,19 @@ composer require triyatna/duitku-laravel
 ```
 
 ## Konfigurasi
+
 ### 1. Publikasikan File Konfigurasi
+
 Jalankan perintah `vendor:publish` untuk menyalin file konfigurasi package ke direktori `config` aplikasi Anda.
 
 ```bash
 php artisan vendor:publish --provider="Triyatna\DuitkuLaravel\DuitkuServiceProvider" --tag="config"
 ```
+
 Perintah ini akan membuat file `config/duitku.php`.
 
 ### 2. Atur Variabel Lingkungan (.env)
+
 Selanjutnya, buka file `.env` Anda dan tambahkan kredensial Duitku. Anda bisa mendapatkan kredensial ini dari dasbor Duitku Anda.
 
 ```.env
@@ -42,7 +47,9 @@ DUITKU_SANDBOX_MODE=true
 DUITKU_CALLBACK_URL=https://situsanda.com/callback
 DUITKU_RETURN_URL=https://situsanda.com/payment/finish
 ```
+
 Keterangan:
+
 - `DUITKU_MERCHANT_KEY`: Merchant Key Anda dari Duitku.
 - `DUITKU_MERCHANT_CODE`: Kode Merchant Anda.
 - `DUITKU_SANDBOX_MODE`: Atur ke true untuk mode pengembangan/sandbox, atau false untuk mode produksi.
@@ -50,8 +57,11 @@ Keterangan:
 - `DUITKU_RETURN_URL`: URL tujuan pengguna setelah menyelesaikan pembayaran.
 
 ## Penggunaan
+
 Package ini menyediakan Facade Duitku untuk kemudahan akses. Berikut adalah contoh cara menggunakannya.
+
 ### 1. Membuat Invoice Pembayaran
+
 Anda dapat membuat invoice baru dan mengarahkan pengguna ke halaman pembayaran Duitku.
 Contoh di dalam `Controllers`:
 
@@ -61,7 +71,7 @@ Contoh di dalam `Controllers`:
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Triyatna\DuitkuLaravel\Facades\Duitku;
+use Triyatna\DuitkuLaravel\Duitku;
 
 class PaymentController extends Controller
 {
@@ -108,6 +118,7 @@ class PaymentController extends Controller
 ```
 
 ### 2. Menangani Callback dari Duitku
+
 Duitku akan mengirimkan notifikasi ke `DUITKU_CALLBACK_URL` yang telah Anda tentukan. Buat sebuah route dan controller untuk menangani permintaan ini.
 Definisikan Route (misal: `routes/web.php`)
 
@@ -144,11 +155,13 @@ public function handleCallback(Request $request)
     return response()->json(['status' => 'ERROR', 'message' => $callback['message']], 400);
 }
 ```
+
 > Wajib: Pastikan untuk mengecualikan URL callback Anda dari verifikasi token CSRF. Tambahkan URL sesuai dengan yang dibuat tadi (`/callback`) ke dalam properti `except`.
 
 > Contoh dalam laravel 12, ada pada file bootstrap/app.php, pilih bagian withMiddleware dan tambahkan `$middleware->validateCsrfTokens(except:['callback', // URI yang ingin dikecualikan 'duitku/*', // Anda juga bisa menggunakan wildcard (*)]);`
 
 ### 3. Memeriksa Status Transaksi
+
 Anda dapat secara manual memeriksa status sebuah transaksi menggunakan `merchantOrderId`
 
 ```php
@@ -163,6 +176,7 @@ if ($status['statusCode'] == '00') {
 ```
 
 ### 4. Mendapatkan Daftar Metode Pembayaran
+
 Untuk mendapatkan daftar metode pembayaran yang aktif untuk sejumlah transaksi tertentu:
 
 ```php
@@ -176,11 +190,14 @@ foreach ($paymentMethods['paymentFee'] as $method) {
 ```
 
 ## Daftar Metode yang Tersedia
+
 Berikut adalah daftar metode yang bisa Anda panggil melalui Facade `Duitku`
+
 - `Duitku::getPaymentMethods(int $amount)`
 - `Duitku::createInvoice(...)`
 - `Duitku::checkTransactionStatus(string $merchantOrderId)`
 - `Duitku::handleCallback()`
 
 ## Lisensi
+
 Paket ini dirilis di bawah [[Lisensi MIT](https://github.com/triyatna/duitku-laravel?tab=MIT-1-ov-file)].
