@@ -10,6 +10,8 @@
     "type": "library",
     "homepage": "https://github.com/triyatna/duitku-laravel",
     "license": "MIT",
+    "version": "1.0.1",
+    "minimum-stability": "stable",
     "authors": [
         {
             "name": "Tri Yatna",
