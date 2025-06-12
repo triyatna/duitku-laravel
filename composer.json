@@ -4,8 +4,10 @@
     "keywords": [
         "duitku",
         "laravel",
-        "payment gateway",
-        "pg duitku"
+        "paymentgateway",
+        "pgduitku",
+        "payment",
+        "php"
     ],
     "type": "library",
     "homepage": "https://github.com/triyatna/duitku-laravel",
