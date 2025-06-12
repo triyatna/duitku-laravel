@@ -183,4 +183,4 @@ Berikut adalah daftar metode yang bisa Anda panggil melalui Facade `Duitku`
 - `Duitku::handleCallback()`
 
 ## Lisensi
-Paket ini dirilis di bawah [Lisensi MIT](https://opensource.org/license/mit).
+Paket ini dirilis di bawah [[Lisensi MIT](https://github.com/triyatna/duitku-laravel?tab=MIT-1-ov-file)].
