@@ -4,6 +4,7 @@ namespace Triyatna\DuitkuLaravel;
 
 use Illuminate\Support\Facades\Http;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Validator;
 use Exception;
 
 class Duitku
@@ -66,6 +67,8 @@ class Duitku
      * @param array|null $itemDetails
      * @param array|null $customerDetail
      * @return array
+     * @throws \Illuminate\Validation\ValidationException
+     * @throws \Exception
      */
     public function createInvoice(
         int $paymentAmount,
@@ -81,26 +84,61 @@ class Duitku
         ?array $itemDetails = null,
         ?array $customerDetail = null
     ): array {
-        $signature = hash('sha256', $this->merchantCode . $merchantOrderId . $paymentAmount . $this->merchantKey);
-
-        $params = [
-            'merchantCode' => $this->merchantCode,
-            'paymentAmount' => $paymentAmount,
-            'paymentMethod' => $paymentMethod,
+        // 1. Collect all arguments into one payload array. This is the "Single Source of Truth".
+        $payload = [
+            'paymentAmount'   => $paymentAmount,
+            'paymentMethod'   => $paymentMethod,
             'merchantOrderId' => $merchantOrderId,
-            'productDetails' => $productDetails,
-            'customerVaName' => $customerVaName,
-            'email' => $email,
-            'phoneNumber' => $phoneNumber,
-            'itemDetails' => $itemDetails,
-            'customerDetail' => $customerDetail,
-            'callbackUrl' => $callbackUrl,
-            'returnUrl' => $returnUrl,
-            'signature' => $signature,
-            'expiryPeriod' => $expiryPeriod,
+            'productDetails'  => $productDetails,
+            'customerVaName'  => $customerVaName,
+            'email'           => $email,
+            'phoneNumber'     => $phoneNumber,
+            'itemDetails'     => $itemDetails,
+            'customerDetail'  => $customerDetail,
+            'callbackUrl'     => $callbackUrl,
+            'returnUrl'       => $returnUrl,
+            'expiryPeriod'    => $expiryPeriod,
         ];
 
+        // 2. Validate the payload that has been created.
+        $this->validateInvoicePayload($payload);
+
+        // 3. Create a signature using the data from the payload.
+        $signature = md5($this->merchantCode . $payload['merchantOrderId'] . $payload['paymentAmount'] . $this->merchantKey);
+
+        // 4. Prepare the final parameters by combining payload + merchant data + signature.
+        $params = array_merge($payload, [
+            'merchantCode' => $this->merchantCode,
+            'signature'    => $signature,
+        ]);
+
         return $this->sendRequest('/api/merchant/v2/inquiry', $params);
+    }
+
+    /**
+     * Validate the payload to create an Invoice.
+     *
+     * @param array $payload
+     * @throws \Illuminate\Validation\ValidationException
+     */
+    private function validateInvoicePayload(array $payload): void
+    {
+        $validator = Validator::make($payload, [
+            'paymentAmount'   => 'required|numeric|min:10000',
+            'paymentMethod'   => 'required|string',
+            'merchantOrderId' => 'required|string|max:50',
+            'productDetails'  => 'required|string|max:255',
+            'customerVaName'  => 'required|string|max:100',
+            'email'           => 'required|email',
+            'phoneNumber'     => 'nullable|string|max:20',
+            'itemDetails'     => 'nullable|array',
+            'customerDetail'  => 'nullable|array',
+            'callbackUrl'     => 'required|url',
+            'returnUrl'       => 'required|url',
+            'expiryPeriod'    => 'required|integer|min:1',
+        ]);
+
+        $validator->validate();
     }
 
     /**
@@ -111,7 +149,7 @@ class Duitku
      */
     public function checkTransactionStatus(string $merchantOrderId): array
     {
-        $signature = hash('sha256', $this->merchantCode . $merchantOrderId . $this->merchantKey);
+        $signature = md5($this->merchantCode . $merchantOrderId . $this->merchantKey);
 
         return $this->sendRequest('/api/merchant/transactionStatus', [
             'merchantCode' => $this->merchantCode,
@@ -136,7 +174,7 @@ class Duitku
             }
 
             // Re-calculate the signature
-            $signature = hash('sha256', $callbackData['merchantCode'] . $callbackData['amount'] . $callbackData['merchantOrderId'] . $this->merchantKey);
+            $signature =  md5($callbackData['merchantCode'] . $callbackData['amount'] . $callbackData['merchantOrderId'] . $this->merchantKey);
 
             if ($callbackData['signature'] !== $signature) {
                 return response()->json(['status' => 'error', 'message' => 'Invalid signature.'], 401);
@@ -167,11 +205,7 @@ class Duitku
             // Throw an exception if the request failed (4xx or 5xx response)
             $response->throw();
 
-            return [
-                'status' => 'success',
-                'message' => 'Request successful.',
-                'data' => $response->json(),
-            ];
+            return $response->json();
         } catch (\Illuminate\Http\Client\RequestException $e) {
             // Handle HTTP errors specifically
             return [
