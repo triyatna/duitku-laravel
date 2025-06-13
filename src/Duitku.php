@@ -205,7 +205,11 @@ class Duitku
             // Throw an exception if the request failed (4xx or 5xx response)
             $response->throw();
 
-            return $response->json();
+            return [
+                'status' => 'success',
+                'message' => 'Request successful.',
+                'data' => $response->json(),
+            ];
         } catch (\Illuminate\Http\Client\RequestException $e) {
             // Handle HTTP errors specifically
             return [
