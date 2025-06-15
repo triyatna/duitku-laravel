@@ -184,7 +184,7 @@ class Duitku
             // Example: Update order status in your database.
             // event(new DuitkuPaymentSuccess($callbackData));
 
-            return response()->json(['status' => 'success', 'data' => $callbackData]);
+            return response()->json(['status' => 'success', 'message' => 'Callback return', 'data' => $callbackData]);
         } catch (Exception $e) {
             return response()->json(['status' => 'error', 'message' => 'An unexpected error occurred.', 'details' => $e->getMessage()], 500);
         }
@@ -205,19 +205,18 @@ class Duitku
             // Throw an exception if the request failed (4xx or 5xx response)
             $response->throw();
 
-            if (isset($response->json()['paymentUrl'])) {
-                if ($response->json('paymentUrl') === null || $response->json('paymentUrl') === '') {
-                    return [
-                        'status' => 'error',
-                        'message' => 'Payment not available.',
-                    ];
-                }
-            }
+            $data = $response->json();
 
-            if (isset($response->json()['statusCode']) && $response->json('statusCode') !== 00) {
+            if (isset($data['paymentUrl']) && ($data['paymentUrl'] === null || $data['paymentUrl'] === '')) {
                 return [
                     'status' => 'error',
-                    'message' => $response->json('statusMessage', 'Unknown error occurred.'),
+                    'message' => 'Payment not available.',
+                ];
+            }
+            if (isset($data['statusCode']) && $data['statusCode'] !== '00') {
+                return [
+                    'status' => 'error',
+                    'message' => $data['statusMessage'] ?? 'Unknown error occurred.',
                 ];
             }
             return [
