@@ -205,6 +205,21 @@ class Duitku
             // Throw an exception if the request failed (4xx or 5xx response)
             $response->throw();
 
+            if (isset($response->json()['paymentUrl'])) {
+                if ($response->json('paymentUrl') === null || $response->json('paymentUrl') === '') {
+                    return [
+                        'status' => 'error',
+                        'message' => 'Payment not available.',
+                    ];
+                }
+            }
+
+            if (isset($response->json()['statusCode']) && $response->json('statusCode') !== 00) {
+                return [
+                    'status' => 'error',
+                    'message' => $response->json('statusMessage', 'Unknown error occurred.'),
+                ];
+            }
             return [
                 'status' => 'success',
                 'message' => 'Request successful.',
