@@ -212,13 +212,14 @@ class Duitku
                     'status' => 'error',
                     'message' => 'Payment not available.',
                 ];
+                if (isset($data['statusCode']) && $data['statusCode'] !== '00') {
+                    return [
+                        'status' => 'error',
+                        'message' => $data['statusMessage'] ?? 'Unknown error occurred.',
+                    ];
+                }
             }
-            if (isset($data['statusCode']) && $data['statusCode'] !== '00') {
-                return [
-                    'status' => 'error',
-                    'message' => $data['statusMessage'] ?? 'Unknown error occurred.',
-                ];
-            }
+
             return [
                 'status' => 'success',
                 'message' => 'Request successful.',
