@@ -226,9 +226,11 @@ class Duitku
             ];
         } catch (\Illuminate\Http\Client\RequestException $e) {
             // Handle HTTP errors specifically
+            $message = preg_match('/\{.*\}/', $e->getMessage(), $matches) ? $matches[0] : $e->getMessage();
+            $message = json_decode($message, true)['Message'] ?? $message ?? 'Unknown error occurred.';
             return [
                 'status' => 'error',
-                'message' => 'HTTP Request Failed.',
+                'message' => 'HTTP Request Failed: ' . $message,
                 'details' => $e->response->body() ?? $e->getMessage(),
             ];
         } catch (Exception $e) {
