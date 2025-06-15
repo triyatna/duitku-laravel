@@ -167,7 +167,7 @@ class Duitku
     public function handleCallback(): JsonResponse
     {
         try {
-            $callbackData = request()->all();
+            $callbackData = request()->post();
 
             if (!isset($callbackData['merchantCode'], $callbackData['amount'], $callbackData['merchantOrderId'], $callbackData['signature'])) {
                 return response()->json(['status' => 'error', 'message' => 'Invalid callback data.'], 400);
