@@ -82,7 +82,8 @@ class Duitku
         string $returnUrl,
         int $expiryPeriod = 1440,
         ?array $itemDetails = null,
-        ?array $customerDetail = null
+        ?array $customerDetail = null,
+        ?array $accountLink = null,
     ): array {
         // 1. Collect all arguments into one payload array. This is the "Single Source of Truth".
         $payload = [
@@ -95,6 +96,7 @@ class Duitku
             'phoneNumber'     => $phoneNumber,
             'itemDetails'     => $itemDetails,
             'customerDetail'  => $customerDetail,
+            'accountLink'     => $accountLink,
             'callbackUrl'     => $callbackUrl,
             'returnUrl'       => $returnUrl,
             'expiryPeriod'    => $expiryPeriod,
@@ -133,6 +135,7 @@ class Duitku
             'phoneNumber'     => 'nullable|string|max:20',
             'itemDetails'     => 'nullable|array',
             'customerDetail'  => 'nullable|array',
+            'accountLink'     => 'nullable|array',
             'callbackUrl'     => 'required|url',
             'returnUrl'       => 'required|url',
             'expiryPeriod'    => 'required|integer|min:1',
