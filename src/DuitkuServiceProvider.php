@@ -37,9 +37,11 @@ class DuitkuServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        // Publikasikan file konfigurasi
+        if (! file_exists(config_path('duitku.php'))) {
         $this->publishes([
             __DIR__ . '/../config/duitku.php' => config_path('duitku.php'),
         ], 'config');
+        }
     }
 }
+
